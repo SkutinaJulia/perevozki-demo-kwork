@@ -42,6 +42,7 @@
     --v-e2: 0 2px 6px rgb(var(--v-shadow-color) / .14), 0 22px 54px rgb(var(--v-shadow-color) / .22);
   }
   html, body { background: #f4f6f9; }
+  html { scroll-padding-top: 4.5rem; }
   .v-page .v-lede { font-weight: 400; }
   .v-page .v-label { font-weight: 500; }
   .v-page .v-btn { font-size: var(--v-t-base); font-weight: 600; }
@@ -58,6 +59,23 @@
   .bar__mark i { width: .95em; height: .8em; border-radius: .12em; border: .11em solid var(--v-ink); display: inline-block; position: relative; box-sizing: border-box; }
   .bar__mark i::after { content: ""; position: absolute; left: -.11em; right: -.11em; top: 38%; height: 22%; background: var(--v-accent); }
   .bar__right { display: flex; align-items: center; gap: var(--v-4); }
+  .bar__menu { display: flex; align-items: center; gap: var(--v-5); margin-left: auto; }
+  .bar__menu a { text-decoration: none; color: var(--v-ink); font-size: var(--v-t-sm); font-weight: 500; min-height: 44px; display: inline-flex; align-items: center; opacity: .78; transition: opacity .2s var(--v-ease-out); }
+  .bar__menu a:hover, .bar__menu a:focus-visible { opacity: 1; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: .22em; }
+  .bar__burger { display: none; width: 44px; height: 44px; padding: 0; border: 0; border-radius: var(--v-radius); background: transparent; cursor: pointer; align-items: center; justify-content: center; flex-direction: column; gap: 5px; }
+  .bar__burger i { display: block; width: 22px; height: 2px; background: var(--v-ink); border-radius: 2px; transition: transform .25s var(--v-ease-out), opacity .2s; }
+  .bar.is-open .bar__burger i:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  .bar.is-open .bar__burger i:nth-child(2) { opacity: 0; }
+  .bar.is-open .bar__burger i:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+  @media (max-width: 1180px) { .bar__tel { display: none; } }
+  @media (max-width: 960px) {
+    .bar__burger { display: inline-flex; }
+    .bar__menu { position: absolute; top: 100%; left: 0; right: 0; flex-direction: column; align-items: stretch; gap: 0; margin: 0; padding: var(--v-2) var(--v-gutter) var(--v-4);
+      background: rgb(244 246 249 / .98); box-shadow: 0 14px 30px rgb(20 33 61 / .12); display: none; }
+    .bar.is-open .bar__menu { display: flex; }
+    .bar__menu a { font-size: var(--v-t-base); opacity: 1; padding: 0 var(--v-2); border-top: 1px solid var(--v-hair); min-height: 52px; }
+    .bar__menu a:first-child { border-top: 0; }
+  }
   .bar__tel { text-decoration: none; font-weight: 600; font-size: var(--v-t-sm); color: var(--v-ink); display: inline-flex; align-items: center; min-height: 44px; padding: 0 var(--v-2); }
   @media (max-width: 700px) {
     .bar__tel { display: none; }
@@ -307,6 +325,13 @@
     .close__tel { font-size: var(--v-t-lg); }
     .foot__more { display: none; }
   }
+  /* узкий телефон: кнопка и логотип компактнее, чтобы бургер помещался */
+  @media (max-width: 480px) {
+    .bar .bar__right .v-btn { padding: 0 .85em; font-size: .85rem; }
+    .bar .bar__mark { font-size: 1rem; }
+    .bar .bar__right { gap: 0; }
+    .bar__burger { width: 40px; }
+  }
   /* телефон: текст не мельче 15 px (--v-t-sm на 390 px = 14 px); блок в конце, чтобы не перебивался правилами компонентов */
   @media (max-width: 860px) {
     .hero__tel, .poka__rows p, .tier__note, .tier__price small, .kz__hint, .plist .note, .plist .price small, .prices__incl,
@@ -323,9 +348,17 @@
 
   <header class="bar">
     <a class="bar__mark" href="#top"><i aria-hidden="true"></i>Ваша компания</a>
+    <nav class="bar__menu" id="menu" aria-label="Разделы страницы">
+      <a href="#gruzy">Что перевозим</a>
+      <a href="#kuzov">Подбор машины</a>
+      <a href="#ceny">Цены</a>
+      <a href="#doroga">Как проходит</a>
+      <a href="#razgruzka">Условия</a>
+    </nav>
     <nav class="bar__right" aria-label="Быстрые ссылки">
       <a class="bar__tel" href="#raschet">+7 000 000-00-00</a>
       <a class="v-btn" href="#raschet" rel="noopener">Рассчитать переезд</a>
+      <button class="bar__burger" type="button" aria-label="Меню" aria-expanded="false" aria-controls="menu"><i></i><i></i><i></i></button>
     </nav>
   </header>
 
@@ -590,6 +623,15 @@
     document.getElementById('doroga').setAttribute('data-v-span', '1.8');
   }
   Vibe.mount(document.querySelector('.v-page'));
+
+  // Меню: бургер открывает список, ссылка или Esc закрывают.
+  (function () {
+    var bar = document.querySelector('.bar'), btn = bar.querySelector('.bar__burger'), menu = document.getElementById('menu');
+    function set(open) { bar.classList.toggle('is-open', open); btn.setAttribute('aria-expanded', open ? 'true' : 'false'); }
+    btn.addEventListener('click', function () { set(!bar.classList.contains('is-open')); });
+    menu.addEventListener('click', function (e) { if (e.target.closest('a')) set(false); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') set(false); });
+  })();
 
   // Шапка: подложка после 40 px прокрутки, чтобы текст секций не просвечивал.
   (function () {
